@@ -21,6 +21,9 @@ const connection = mysql.createConnection({
 console.log("connection");
 connection.connect(); // 실제 DB와 연결을 수행
 
+const multer = require('multer'); // multer 라이브러리 호출
+const upload = multer({dest : './upload'}) // 업로드 폴더 설정
+
 app.get('/api/customers', (req, res) => {
     connection.query(
       "SELECT * FROM customer",
@@ -29,6 +32,30 @@ app.get('/api/customers', (req, res) => {
       }
     );
 });
+
+app.use('/image', express.static('./upload')); // 사용자가 실제로 접근해서 프로필 이미지를 확인할 수 있도록 express.static을 이용
+// 이것은 사용자가 image폴더로 접근하는것 같지만 실제 서버로는 upload와 매핑이 된다.
+
+app.post('/api/customers', upload.single('image'), (req, res) => { // upload.single('image')는 사용자가 image라는 이름의 변수로 프로필 이미지의 Binary 데이터를 서버로 전송하기 때문에 그것을 받아오기로 설정. 
+  let sql = "INSERT INTO customer VALUES (null, ?, ?, ?, ?, ?)";
+  let image = '/image/' + req.file.filename; // 사용자 입장에서는 이미지 경로에 있는 파일 이름으로 접근하게 된다.
+  let name = req.body.userName;
+  let birth = req.body.birth;
+  let gender = req.body.gender;
+  let job = req.body.job;
+  console.log(image);
+  console.log(name);
+  console.log(birth);
+  console.log(gender);
+  console.log(job);
+  let params = [image, name, birth, gender, job]; // 위의 sql의 ?자리수마다 들어갈 값을 배열로 담아둔다.
+  connection.query(sql, params, // sql문에 담아둔 파라미터들을 넣어준다.
+    (err, rows, fields) => { // 결과값을 받아오고
+      res.send(rows); // 데이터(rows)를 클라이언트에게 출력할 수 있도록 한다.
+      console.log("Excetpion! : ", err);
+    })
+  
+})
 
 // '' 가 아닌 `` 처리를 해주어야 포트번호를 제대로 입력 받을 수 있음
 app.listen(port, () => console.log(`Listening on port ${port}`));

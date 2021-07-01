@@ -28,14 +28,27 @@ const styles = theme => ({
 
 class App extends Component {
 
-  state = {
-    customers : "",
-    completed : 0
+  constructor(props) {
+    super(props);
+    this.state = {
+      customers : '',
+      completed : 0
+    }
+  }
+
+  stateRefresh = () => { // state를 초기화해주는 함수
+    this.setState({
+      customers : '',
+      completed : 0
+    });
+    this.callApi() // 고객 데이터를 불러오는 부분
+      .then(res => this.setState({customers : res}))
+      .catch(err => console.log("Exception! : ", err));
   }
 
   componentDidMount() {
     this.timer = setInterval(this.progress, 20);
-    this.callApi()
+    this.callApi() // 고객 데이터를 불러오는 부분
       .then(res => this.setState({customers : res}))
       .catch(err => console.log("Exception! : ", err));
   }
@@ -78,7 +91,7 @@ class App extends Component {
             </TableBody>
           </Table>
         </Paper>
-        <CustomerAdd/>
+        <CustomerAdd stateRefresh={this.stateRefresh} />
       </div>
     );
   }

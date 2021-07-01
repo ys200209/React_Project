@@ -23,7 +23,10 @@ class CustomerAdd extends React.Component {
 
     handleValueChange = (e) => { // 매개변수 (e)vent 를 전달받음
         let nextState = {};
-        nextState[e.target.name] = e.target.name; // 사용자가 입력한 폼의 name 속성의 값을 실제 state에 저장하겠다는 의미.
+        console.log("e.target.name = ", e.target.name);
+        console.log("e.name = ", e.name);
+        console.log("nextState[e.target.name] = ", nextState[e.target.name]);
+        nextState[e.target.name] = e.target.value; // 사용자가 입력한 폼의 name 속성의 값을 실제 state에 저장하겠다는 의미.
         this.setState(nextState); // nextState를 이용해 현재 state 값을 갱신
     }
 
@@ -32,7 +35,22 @@ class CustomerAdd extends React.Component {
         this.addCustomer()
             .then((response) => { // 서버로부터 어떠한 response가 건너왔을 때
                 console.log(response.data); // 건너온 데이터를 콘솔에 출력
+                console.log("stateRefresh() 함수 실행 전");
+                this.props.stateRefresh(); // 비동기로 실행되기에 정확하게 추가된 뒤 새로고침되리란 보장이 없으므로 위치를 옮긴다.
+                console.log("stateRefresh() 함수 실행 후");
             });
+        this.setState({ // 추가하기 버튼을 통해 전송하면 다시 빈칸으로 만들어주기.
+            file : null,
+            userName : '',
+            birth : '',
+            gender : '',
+            job : '',
+            fileName : ''
+        })
+        //window.location.reload(); // 페이지 새로고침 (좋지않은 방식)
+        // console.log("stateRefresh() 함수 실행 전");
+        // this.props.stateRefresh(); // 비동기로 실행되기에 정확하게 추가된 뒤 새로고침되리란 보장이 없으므로 위로 위치를 옮긴다.
+        // console.log("stateRefresh() 함수 실행 후");
 
     }
 
@@ -40,7 +58,7 @@ class CustomerAdd extends React.Component {
         const url = '/api/customers';
         const formData = new FormData();
         formData.append('image', this.state.file);
-        formData.append('name', this.state.userName);
+        formData.append('userName', this.state.userName);
         formData.append('birth', this.state.birth);
         formData.append('gender', this.state.gender);
         formData.append('job', this.state.job);
@@ -58,7 +76,7 @@ class CustomerAdd extends React.Component {
             <form onSubmit={this.handleFormSubmit}>
                 <h1>고객 추가</h1>
                 프로필 이미지 : <input type="file" name="file" file={this.state.file} value={this.state.fileName} onChange={this.handleFileChange}/><br/>
-                이름 : <input type="text" name="userName" value={this.state.userName} onChange={this.state.handleValueChange} /><br/>
+                이름 : <input type="text" name="userName" value={this.state.userName} onChange={this.handleValueChange} /><br/>
                 생년월일 : <input type="text" name="birth" value={this.state.birth} onChange={this.handleValueChange}/><br/>
                 성별 : <input type="text" name="gender" value={this.state.gender} onChange={this.handleValueChange}/><br/>
                 직업 : <input type="text" name="job" value={this.state.job} onChange={this.handleValueChange}/><br/>
