@@ -1,5 +1,18 @@
 import React from 'react';
 import { post } from 'axios';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
+import { withStyles } from '@material-ui/core/styles';
+
+const styles = theme => ({
+    hidden: {
+        display : 'none'
+    }
+});
 
 class CustomerAdd extends React.Component {
     constructor(props) {
@@ -10,7 +23,8 @@ class CustomerAdd extends React.Component {
             birth : '',
             gender : '',
             job : '',
-            fileName : ''
+            fileName : '',
+            open : false // 현재 다이얼로그창이 열려있는가에 대한 속성
         }
     }
 
@@ -71,21 +85,56 @@ class CustomerAdd extends React.Component {
         return post(url, formData, config); // 해당 url에 폼 데이터를 환경설정에 맞게 post로 전송.
     }
 
+    handleClickOpen = () => { // 바인딩 처리
+        this.setState({
+            open:true
+        });
+    }
+
+    handleClose = () => { // 바인딩 처리
+        this.setState({
+            file : null,
+            userName : '',
+            birth : '',
+            gender : '',
+            job : '',
+            fileName : '',
+            open : false 
+        });
+    }
+
     render() {
+        const { classes } = this.props; // 디자인을 입히기 위해서 classes 변수 초기화
         return (
-            <form onSubmit={this.handleFormSubmit}>
-                <h1>고객 추가</h1>
-                프로필 이미지 : <input type="file" name="file" file={this.state.file} value={this.state.fileName} onChange={this.handleFileChange}/><br/>
-                이름 : <input type="text" name="userName" value={this.state.userName} onChange={this.handleValueChange} /><br/>
-                생년월일 : <input type="text" name="birth" value={this.state.birth} onChange={this.handleValueChange}/><br/>
-                성별 : <input type="text" name="gender" value={this.state.gender} onChange={this.handleValueChange}/><br/>
-                직업 : <input type="text" name="job" value={this.state.job} onChange={this.handleValueChange}/><br/>
-                <button type="submit">추가하기</button>
-            </form>
+            <div>
+                <Button variant="contained" color="primary" onClick={this.handleClickOpen}>
+                    고객 추가하기
+                </Button>
+                <Dialog open={this.state.open} onClose={this.handleClose}>
+                    <DialogTitle>고객 추가</DialogTitle>
+                    <DialogContent>
+                        <input className={classes.hidden} accept="image/*" id="raised-button-file" name="file" file={this.state.file} value={this.state.fileName} onChange={this.handleFileChange}/><br/>
+                        <label htmlFor="raised-button-file">
+                            <Button variant="contained" color="primary" component="span" name="file">
+                                {this.state.fileName === "" ? "프로필 이미지 선택" : this.state.fileName}
+                            </Button>
+                        </label>
+                        <br/>
+                        <TextField label="이름" type="text" name="userName" value={this.state.userName} onChange={this.handleValueChange} /><br/>
+                        <TextField label="생년월일" type="text" name="birth" value={this.state.birth} onChange={this.handleValueChange}/><br/>
+                        <TextField label="성별" type="text" name="gender" value={this.state.gender} onChange={this.handleValueChange}/><br/>
+                        <TextField label="직업" type="text" name="job" value={this.state.job} onChange={this.handleValueChange}/><br/>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button variant="contained" color="primary" onClick={this.handleFormSubmit}>추가</Button>
+                        <Button variant="outlined" color="primary" onClick={this.handleClose}>닫기</Button>
+                    </DialogActions>
+                </Dialog>
+            </div>
         );
     }
 
 
 }
 
-export default CustomerAdd;
+export default withStyles(styles)(CustomerAdd); // 디자인 요소가 적용되면 리턴값이 달라진다.
