@@ -26,7 +26,7 @@ const upload = multer({dest : './upload'}) // 업로드 폴더 설정
 
 app.get('/api/customers', (req, res) => {
     connection.query(
-      "SELECT * FROM customer",
+      "SELECT * FROM customer WHERE isDeleted = 0",
       (err, rows, fields) => {
         res.send(rows);
       }
@@ -37,7 +37,7 @@ app.use('/image', express.static('./upload')); // 사용자가 실제로 접근�
 // 이것은 사용자가 image폴더로 접근하는것 같지만 실제 서버로는 upload와 매핑이 된다.
 
 app.post('/api/customers', upload.single('image'), (req, res) => { // upload.single('image')는 사용자가 image라는 이름의 변수로 프로필 이미지의 Binary 데이터를 서버로 전송하기 때문에 그것을 받아오기로 설정. 
-  let sql = "INSERT INTO customer VALUES (null, ?, ?, ?, ?, ?)";
+  let sql = "INSERT INTO customer VALUES (null, ?, ?, ?, ?, ?, now(), 0)";
   let image = '/image/' + req.file.filename; // 사용자 입장에서는 이미지 경로에 있는 파일 이름으로 접근하게 된다.
   let name = req.body.userName;
   let birth = req.body.birth;
@@ -56,6 +56,16 @@ app.post('/api/customers', upload.single('image'), (req, res) => { // upload.sin
     })
   
 })
+
+app.delete('/api/customers/:id', (req, res) => {
+  let sql = 'UPDATE customer SET isDeleted = 1 WHERE id = ?';
+  let params = [req.params.id];
+  connection.query(sql, params,
+    (err, rows, fields) => {
+      res.send(rows); // 실제 쿼리 실행결과를 클라이언트 측에 전송해준다.
+    }
+  )
+}); // DELETE 메서드로 접속한 경우, 특정한 아이디값과 매핑된 경우에 처리함.
 
 // '' 가 아닌 `` 처리를 해주어야 포트번호를 제대로 입력 받을 수 있음
 app.listen(port, () => console.log(`Listening on port ${port}`));
